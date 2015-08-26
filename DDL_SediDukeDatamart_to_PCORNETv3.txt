@@ -1,0 +1,413 @@
+/* ************************************************************************************
+** Date     2015-08-12
+** Author   P. Barth
+** Reviewer U. Rogers, completed 2015-08-24
+** Purpose  DDL for PCORnet v3.0 tables.  Code to be implemented in Oracle db; may require
+**          alterations for other RDBMS'.
+**          All tables must be created in the schema in order for PCORnet code to work,
+**          although not all tables must be populated.
+** Note     **There are DROP TABLE statements before CREATE TABLE statements. 
+**          The DROP TABLE statements are commented out so that no tables are dropped
+**          accidentally.  These statements must be run manually or must be un-commented out
+**          before this script is run.
+** Length Conventions:  All columns are the datatype as specified in the PCORnet v3.0 CDM.
+**          All columns ending in "ID" that are varchar2 default to length 100 unless the length 
+**          is specified by the CDM.  All columns beginning with "RAW" that are varchar2 
+**          default to length 500.  
+**          PCORnet v3.0 CDM specifies a length for datatype=number columns, but because 
+**          there is no precision, these columns have datatype = number with no length specified.
+**
+
+** ***********************************************************************************/
+
+--- DROP TABLES -------------------------------------------
+/*
+-- DROP TABLE statements are in specific order in case constraints have already been applied to existing tables.
+drop table sedi_duke_datamart.harvest;
+drop table sedi_duke_datamart.death_cause;
+drop table sedi_duke_datamart.death;
+drop table sedi_duke_datamart.pcornet_trial;
+drop table sedi_duke_datamart.pro_cm;
+drop table sedi_duke_datamart.condition;
+drop table sedi_duke_datamart.lab_result_cm;
+drop table sedi_duke_datamart.dispensing;
+drop table sedi_duke_datamart.prescribing;
+drop table sedi_duke_datamart.vital;
+drop table sedi_duke_datamart.procedures;
+drop table sedi_duke_datamart.diagnosis;
+drop table sedi_duke_datamart.encounter;
+drop table sedi_duke_datamart.enrollment;
+drop table sedi_duke_datamart.demographic;
+*/
+
+
+-- DEMOGRAPHIC --------------------------------------------
+create table sedi_duke_datamart.demographic 
+  (patid varchar2(100),
+   birth_date date,
+   birth_time varchar2(5),
+   sex varchar2(2),
+   hispanic varchar2(2),
+   race varchar2(2),
+   biobank_flag varchar2(1),
+   raw_sex varchar2(500),
+   raw_hispanic varchar2(500),
+   raw_race varchar2(500));
+
+-- ENROLLMENT ---------------------------------------------
+create table sedi_duke_datamart.enrollment
+  (patid varchar2(100),
+   enr_start_date date,
+   enr_end_date date,
+   chart varchar2(1),
+   enr_basis varchar2(1));
+
+-- ENCOUNTER ----------------------------------------------
+create table sedi_duke_datamart.encounter
+  (encounterid varchar2(100),
+   patid varchar2(100),
+   admit_date date,
+   admit_time varchar2(5),
+   discharge_date date,
+   discharge_time varchar2(5),
+   providerid varchar2(100),
+   facility_location varchar2(3),
+   enc_type varchar2(2),
+   facilityid varchar2(100),
+   discharge_disposition varchar2(2),
+   discharge_status varchar2(2),
+   drg varchar2(3),
+   drg_type varchar2(2),
+   admitting_source varchar2(2),
+   raw_siteid varchar2(500),
+   raw_enc_type varchar2(500),
+   raw_discharge_disposition varchar2(500),
+   raw_discharge_status varchar2(500),
+   raw_drg_type varchar2(500),
+   raw_admitting_source varchar2(500));
+
+-- DIAGNOSIS ----------------------------------------------
+create table sedi_duke_datamart.diagnosis
+  (diagnosisid varchar2(100),
+   patid varchar2(100),
+   encounterid varchar2(100),
+   enc_type varchar2(2),
+   admit_date date,
+   providerid varchar2(100),
+   dx varchar2(18),
+   dx_type varchar2(2),
+   dx_source varchar2(2),
+   pdx varchar2(2),
+   raw_dx varchar2(500),
+   raw_dx_type varchar2(500),
+   raw_dx_source varchar2(500),
+   raw_pdx varchar2(500));
+
+-- PROCEDURES ---------------------------------------------
+create table sedi_duke_datamart.procedures
+  (proceduresid varchar2(100),
+   patid varchar2(100),
+   encounterid varchar2(100),
+   enc_type varchar2(2),
+   admit_date date,
+   providerid varchar2(100),
+   px_date date,
+   px varchar2(11),
+   px_type varchar2(2),
+   px_source varchar2(500),  
+   --2015-08-12/phb:  Note: In PCORnet CDM v3.0, values for PX_SOURCE transform to 2 characters, 
+   -- -- but there is no length specification for this column. Used length of RAW columns until PCORnet CDM can be clarified.
+   raw_px varchar2(500),
+   raw_px_type varchar2(500));
+
+-- VITAL --------------------------------------------------
+create table sedi_duke_datamart.vital
+  (vitalid varchar2(100),
+   patid varchar2(100),
+   encounterid varchar2(100),
+   measure_date date,
+   measure_time varchar2(5),
+   vital_source varchar2(2),
+   ht number,
+   wt number,
+   diastolic number,
+   systolic number,
+   original_bmi number,
+   bp_position varchar2(2),
+   smoking varchar2(2),
+   tobacco varchar2(2),
+   tobacco_type varchar2(2),
+   raw_diastolic varchar2(500),
+   raw_systolic varchar2(500),
+   raw_bp_position varchar2(500),
+   raw_smoking varchar2(500),
+   raw_tobacco varchar2(500),
+   raw_tobacco_type varchar2(500));
+
+-- DISPENSING ---------------------------------------------
+create table sedi_duke_datamart.dispensing
+  (dispensingid varchar2(100),
+   patid varchar2(100),
+   prescribingid varchar2(100),
+   dispense_date date,
+   ndc varchar2(11),
+   dispense_sup number,
+   dispense_amt number,
+   raw_ndc varchar2(500));
+
+-- LAB_RESULT_CM ------------------------------------------
+create table sedi_duke_datamart.lab_result_cm
+  (lab_result_cm_id varchar2(100),
+   patid varchar2(100),
+   encounterid varchar2(100),
+   lab_name varchar2(10),
+   specimen_source varchar2(10),
+   lab_loinc varchar2(10),
+   priority varchar2(2),
+   result_loc varchar2(2),
+   lab_px varchar2(11),
+   lab_px_type varchar2(2),
+   lab_order_date date,
+   specimen_date date,
+   specimen_time varchar2(5),
+   result_date date,
+   result_time varchar2(5),
+   result_qual varchar2(12),
+   result_num number,
+   result_modifier varchar2(2),
+   result_unit varchar2(11),
+   norm_range_low varchar2(10),
+   norm_modifier_low varchar2(2),
+   norm_range_high varchar2(10),
+   norm_modifier_high varchar2(2),
+   abn_ind varchar2(2),
+   raw_lab_name varchar2(500),
+   raw_lab_code varchar2(500),
+   raw_panel varchar2(500),
+   raw_result varchar2(500),
+   raw_unit varchar2(500),
+   raw_order_dept varchar2(500),
+   raw_facility_code varchar2(500));
+
+-- CONDITION ----------------------------------------------
+create table sedi_duke_datamart.condition
+  (conditionid varchar2(100),
+   patid varchar2(100),
+   encounterid varchar2(100),
+   report_date date,
+   resolve_date date,
+   onset_date date,
+   condition_status varchar2(2),
+   condition varchar2(18),
+   condition_type varchar2(2),
+   condition_source varchar2(2),
+   raw_condition_status varchar2(500),
+   raw_condition varchar2(500),
+   raw_condition_type varchar2(500),
+   raw_condition_source varchar2(500));
+
+-- PRO_CM -------------------------------------------------
+create table sedi_duke_datamart.pro_cm
+  (pro_cm_id varchar2(100),
+   patid varchar2(100),
+   encounterid varchar2(100),
+   pro_item varchar2(7),
+   pro_loinc varchar2(10),
+   pro_date date, 
+   pro_time varchar2(5),
+   pro_response number,
+   pro_method varchar2(2),
+   pro_mode varchar2(2),
+   pro_cat varchar2(2),
+   raw_pro_code varchar2(500),
+   raw_pro_response varchar2(500));
+
+-- PRESCRIBING --------------------------------------------
+create table sedi_duke_datamart.prescribing
+  (prescribingid varchar2(100),
+   patid varchar2(100),
+   encounterid varchar2(100),
+   rx_providerid varchar2(100),
+   rx_order_date date,
+   rx_order_time varchar2(5),
+   rx_start_date date,
+   rx_end_date date,
+   rx_quantity number,
+   rx_refills number,
+   rx_days_supply number,
+   rx_frequency varchar2(2),
+   rx_basis varchar2(2),
+   rxnorm_cui number,
+   raw_rx_med_name varchar2(500),
+   raw_rx_frequency varchar2(500),
+   raw_rxnorm_cui varchar2(500));
+
+-- PCORNET_TRIAL ------------------------------------------
+create table sedi_duke_datamart.pcornet_trial
+  (patid varchar2(100),
+   participantid varchar2(100),
+   trial_siteid varchar2(100),
+   trial_enroll_date date,
+   trial_end_date date,
+   trial_withdraw_date date,
+   trial_invite_code varchar2(20));
+
+-- DEATH --------------------------------------------------
+create table sedi_duke_datamart.death
+  (patid varchar2(100),
+   death_date date,
+   death_date_impute varchar2(2),
+   death_source varchar2(2),
+   death_match_confidence varchar2(2));
+
+-- DEATH_CAUSE --------------------------------------------
+create table sedi_duke_datamart.death_cause
+  (patid varchar2(100),
+   death_cause varchar2(8),
+   death_cause_code varchar2(2),
+   death_cause_type varchar2(2),
+   death_cause_source varchar2(2),
+   death_cause_confidence varchar2(2));
+
+-- HARVEST ------------------------------------------------
+create table sedi_duke_datamart.harvest
+  (networkid varchar2(10),
+   network_name varchar2(20),
+   datamartid varchar2(10),
+   datamart_name varchar2(20),
+   datamart_platform varchar2(2),
+   cdm_version number,
+   datamart_claims varchar2(2),
+   datamart_ehr varchar2(2),
+   birth_date_mgmt varchar2(2),
+   enr_start_date_mgmt varchar2(2),
+   enr_end_date_mgmt varchar2(2),
+   admit_date_mgmt varchar2(2),
+   discharge_date_mgmt varchar2(2),
+   px_date_mgmt varchar2(2),
+   rx_order_date_mgmt varchar2(2),
+   rx_start_date_mgmt varchar2(2),
+   rx_end_date_mgmt varchar2(2),
+   dispense_date_mgmt varchar2(2),
+   lab_order_date_mgmt varchar2(2),
+   specimen_date_mgmt varchar2(2),
+   result_date_mgmt varchar2(2),
+   measure_date_mgmt varchar2(2),
+   onset_date_mgmt varchar2(2),
+   report_date_mgmt varchar2(2),
+   resolve_date_mgmt varchar2(2),
+   pro_date_mgmt varchar2(2),
+   refresh_demographic_date date,
+   refresh_enrollment_date date,
+   refresh_encounter_date date,
+   refresh_diagnosis_date date,
+   refresh_procedures_date date,
+   refresh_vital_date date,
+   refresh_dispensing_date date,
+   refresh_lab_result_cm_date date,
+   refresh_condition_date date,
+   refresh_pro_cm_date date,
+   refresh_prescribing_date date,
+   refresh_pcornet_trial_date date,
+   refresh_death_date date,
+   refresh_death_cause_date date);
+
+
+-- APPLY CONSTRAINTS --------------------------------------------
+
+/*
+alter table sedi_duke_datamart.demographic
+	add constraint demographic_pk PRIMARY KEY (patid);
+
+alter table sedi_duke_datamart.enrollment
+	add constraint enrollment_pk PRIMARY KEY (patid, enr_start_date, enr_basis)
+	add constraint enroll_fk_patid FOREIGN KEY (patid) REFERENCES demographic(patid);
+
+alter table sedi_duke_datamart.encounter
+	add constraint encounter_pk PRIMARY KEY (encounterid)
+	add constraint enc_fk_patid FOREIGN KEY (patid) REFERENCES demographic(patid)
+	modify (patid varchar2(100) NOT NULL, 
+            admit_date date NOT NULL,
+            enc_type varchar2(2) NOT NULL);
+
+alter table sedi_duke_datamart.diagnosis
+	add constraint diagnosis_pk PRIMARY KEY (diagnosisid)
+	add constraint dx_fk_patid FOREIGN KEY (patid) REFERENCES demographic(patid)
+	add constraint dx_fk_encounterid FOREIGN KEY (encounterid) REFERENCES encounter(encounterid)
+	modify (patid varchar2(100) NOT NULL,
+            encounterid varchar2(100) NOT NULL,
+            dx varchar2(18) NOT NULL,
+            dx_type varchar2(2) NOT NULL,
+            dx_source varchar2(2) NOT NULL);
+ 
+alter table sedi_duke_datamart.procedures
+	add constraint procedures_pk PRIMARY KEY (proceduresid)
+	add constraint px_fk_patid FOREIGN KEY (patid) REFERENCES demographic(patid)
+	add constraint px_fk_encounterid FOREIGN KEY (encounterid) REFERENCES encounter(encounterid)
+	modify (patid varchar2(100) NOT NULL,
+            encounterid varchar2(100) NOT NULL,
+            px varchar2(11) NOT NULL,
+            px_type varchar2(2) NOT NULL);
+
+alter table sedi_duke_datamart.vital
+	add constraint vital_pk PRIMARY KEY (vitalid)
+	add constraint vital_fk_patid FOREIGN KEY (patid) REFERENCES demographic(patid)
+	add constraint vital_fk_encounterid FOREIGN KEY (encounterid) REFERENCES encounter(encounterid)
+	modify (patid varchar2(100) NOT NULL,
+            measure_date date NOT NULL,
+            vital_source varchar2(2) NOT NULL);
+
+alter table sedi_duke_datamart.prescribing
+	add constraint prescribing_pk PRIMARY KEY (prescribingid)
+	add constraint prescribe_fk_patid FOREIGN KEY (patid) REFERENCES demographic(patid)
+	add constraint prescribe_fk_encounterid FOREIGN KEY (encounterid) REFERENCES encounter(encounterid)
+	modify patid varchar2(100) NOT NULL;
+		
+alter table sedi_duke_datamart.dispensing
+	add constraint dispense_pk PRIMARY KEY (dispensingid)
+	add constraint dispense_fk_patid FOREIGN KEY (patid) REFERENCES demographic(patid)
+	add constraint dispense_fk_prescribeid FOREIGN KEY (prescribingid) REFERENCES prescribing(prescribingid)
+	modify (patid varchar2(100) NOT NULL,
+            dispense_date date NOT NULL,
+            ndc varchar2(11) NOT NULL);
+
+alter table sedi_duke_datamart.lab_result_cm
+	add constraint labresult_pk PRIMARY KEY (lab_result_cm_id)
+	add constraint labresult_fk_patid FOREIGN KEY (patid) REFERENCES demographic(patid)
+	add constraint labresult_fk_encounterid FOREIGN KEY (encounterid) REFERENCES encounter(encounterid)
+	modify (patid varchar2(100) NOT NULL,
+            result_date date NOT NULL);
+
+alter table sedi_duke_datamart.condition
+	add constraint condition_pk PRIMARY KEY (conditionid)
+	add constraint condition_fk_patid FOREIGN KEY (patid) REFERENCES demographic(patid)
+	add constraint condition_fk_encounterid FOREIGN KEY (encounterid) REFERENCES encounter(encounterid)
+	modify (patid varchar2(100) NOT NULL,
+            condition varchar2(18) NOT NULL,
+            condition_type varchar2(2) NOT NULL,
+            condition_source varchar2(2) NOT NULL);
+
+alter table sedi_duke_datamart.pro_cm
+	add constraint pro_cm_pk PRIMARY KEY (pro_cm_id)
+	add constraint pro_cm_fk_patid FOREIGN KEY (patid) REFERENCES demographic(patid)
+	add constraint pro_cm_fk_encounterid FOREIGN KEY (encounterid) REFERENCES encounter(encounterid)
+	modify (patid varchar2(100) NOT NULL,
+            pro_item varchar2(7) NOT NULL,
+            pro_date date NOT NULL,
+            pro_response number NOT NULL);
+
+alter table sedi_duke_datamart.pcornet_trial
+	add constraint trial_pk PRIMARY KEY (patid, trialid, participantid)
+	add constraint trial_fk_patid FOREIGN KEY (patid) REFERENCES demographic(patid);
+
+alter table sedi_duke_datamart.death
+	add constraint death_pk PRIMARY KEY (patid, death_date, death_source)
+	add constraint death_fk_patid FOREIGN KEY (patid) REFERENCES demographic(patid);
+
+alter table sedi_duke_datamart.death_cause
+	add constraint deathcause_pk PRIMARY KEY (patid, death_cause, death_cause_code, death_cause_type, death_cause_source)
+	add constraint deathcause_fk_patid FOREIGN KEY (patid) REFERENCES demographic(patid);
+
+alter table sedi_duke_datamart.harvest
+	add constraint harvest_pk PRIMARY KEY (networkid, datamartid);
+*/
